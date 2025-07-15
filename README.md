@@ -1,16 +1,42 @@
-# Passage Embedding Analysis
+# Optimized Passage Embeddings
 
 A Python tool for analyzing and comparing passage embeddings using various similarity metrics.
+
+## Package Structure
+
+```
+src/passage_embed/
+├── __init__.py              # Package initialization
+├── cli.py                   # Command-line interface
+├── core/                    # Core functionality
+│   ├── __init__.py
+│   ├── config.py           # Configuration management
+│   ├── exceptions.py       # Custom exceptions
+│   └── logging.py          # Logging system
+├── analysis/               # Analysis modules
+│   ├── __init__.py
+│   ├── scraper.py          # Web scraping
+│   ├── extractor.py        # HTML content extraction
+│   └── embeddings.py       # Embedding generation
+├── visualization/          # Visualization modules
+│   ├── __init__.py
+│   └── plotly_3d.py        # 3D visualization
+└── utils/                  # Utility functions
+    ├── __init__.py
+    ├── validation.py       # Input validation
+    ├── versioning.py       # File versioning
+    └── output_management.py # Output directory management
+```
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/passage-embedding-analysis.git
-cd passage-embedding-analysis
+git clone https://github.com/rybacorn/OptimizedPassageEmbeddings.git
+cd OptimizedPassageEmbeddings
 
 # Install dependencies
-pip install -r requirements.txt --no-cache-dir --use-pep517
+pip install -r requirements.txt
 
 # Install the package in development mode
 pip install -e .
@@ -38,21 +64,6 @@ passage-embed test \
   --queries "ai video generator,free ai video generator,best ai video generator" \
   --run-name "heygen_vs_synthesia_test"
 ```
-
-### Output Management
-
-```bash
-# Show current output structure
-python cleanup_test_outputs.py --show
-
-# Clean up old test runs
-python cleanup_test_outputs.py --cleanup
-
-# Consolidate scattered outputs
-python cleanup_test_outputs.py --consolidate
-```
-
-For detailed output management information, see [OUTPUT_MANAGEMENT.md](OUTPUT_MANAGEMENT.md).
 
 ## Development
 

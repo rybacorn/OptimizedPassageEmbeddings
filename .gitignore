@@ -36,4 +36,7 @@ outputs/
 .coverage
 htmlcov/
 .pytest_cache/
-.ruff_cache/ 
+.ruff_cache/
+
+# Local development files
+Project_Notes/ 
