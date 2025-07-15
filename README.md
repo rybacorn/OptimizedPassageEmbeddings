@@ -1,8 +1,12 @@
-# Optimized Passage Embeddings
-
-[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0-orange)](https://github.com/rybacorn/OptimizedPassageEmbeddings)
+<div align="center">
+  <img src="OptimizedPassageEmbeddings.png" alt="Optimized Passage Embeddings Logo" width="300">
+  
+  # Optimized Passage Embeddings
+  
+  [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Version](https://img.shields.io/badge/version-0.1.0-orange)](https://github.com/rybacorn/OptimizedPassageEmbeddings)
+</div>
 
 **Version:** 0.1.0
 
@@ -122,50 +126,14 @@ pre-commit install
 4. **Analysis**: Calculates similarity between your content, competitor content, and target keywords
 5. **Visualization**: Creates an interactive 3D plot showing relationships
 
-## Troubleshooting
-
-### Common Issues
-
-**"URL not found" errors**
-- Check that your URLs are accessible
-- Some sites block automated requests
-
-**"No content extracted"**
-- The site might use JavaScript to load content
-- Try a different page or competitor
-
-**Large file sizes**
-- Results can be several MB due to HTML content
-- Use the cleanup script to manage old test runs
-
-### Getting Help
-
-If you encounter issues:
-1. Check the logs in the `logs/` directory
-2. Try running in test mode first
-3. Verify your URLs are accessible in a browser
-
 ## Development
 
-### Running Tests
 ```bash
+# Run tests
 pytest
-```
 
-### Code Quality
-```bash
+# Code quality
 ruff check .
-pre-commit run --all-files
-```
-
-### Project Structure
-```
-src/passage_embed/
-├── cli.py                   # Command-line interface
-├── core/                    # Configuration, logging, exceptions
-├── analysis/                # Web scraping, content extraction, embeddings
-├── visualization/           # 3D plotting and charts
-└── utils/                   # Validation, versioning, output management
 ```
 
 ## License
@@ -174,17 +142,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## Version History
-
-- **0.1.0** - Initial release with core functionality
-  - Web scraping and content extraction
-  - Embedding generation and similarity analysis
-  - 3D visualization
-  - CLI interface 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. 
 MIT 

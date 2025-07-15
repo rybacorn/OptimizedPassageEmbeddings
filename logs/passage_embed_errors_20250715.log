@@ -1,0 +1,1 @@
+2025-07-15 13:49:58,133 - src.passage_embed.analysis.scraper - ERROR - Failed to scrape client URL: Error scraping https://www.heygen.com/avatars: No module named 'slugify'

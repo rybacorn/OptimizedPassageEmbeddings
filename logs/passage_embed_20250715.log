@@ -1,0 +1,95 @@
+2025-07-15 13:49:57,799 - __main__ - INFO - Starting analysis: Client=https://www.heygen.com/avatars, Competitor=https://www.synthesia.io/features/avatars
+2025-07-15 13:49:57,799 - __main__ - INFO - Target queries: ['ai video generator', 'free ai video generator', 'ai video generator free', 'ai video generation models', 'baby ai video generator', 'best ai video generator', 'ai generated video', 'ai porn video generator', 'ai generated porn video', 'ai generated porn videos', 'video ai generator', 'ai generated videos', 'ai music video generator', 'ai video generator porn', 'best ai video generators', 'best free ai video generator', 'nsfw ai video generator free no sign up', 'sora ai video generator', 'ai video generator free to music', 'ai video generator free to musicwith mp4a']
+2025-07-15 13:49:57,799 - __main__ - INFO - Step 1: Scraping URLs...
+2025-07-15 13:49:57,799 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.heygen.com/avatars
+2025-07-15 13:49:58,133 - src.passage_embed.analysis.scraper - ERROR - Failed to scrape client URL: Error scraping https://www.heygen.com/avatars: No module named 'slugify'
+2025-07-15 13:54:00,781 - __main__ - INFO - Starting analysis: Client=https://www.heygen.com/avatars, Competitor=https://www.synthesia.io/features/avatars
+2025-07-15 13:54:00,782 - __main__ - INFO - Target queries: ['ai video generator', 'free ai video generator', 'ai video generator free', 'ai video generation models', 'baby ai video generator', 'best ai video generator', 'ai generated video', 'ai porn video generator', 'ai generated porn video', 'ai generated porn videos', 'video ai generator', 'ai generated videos', 'ai music video generator', 'ai video generator porn', 'best ai video generators', 'best free ai video generator', 'nsfw ai video generator free no sign up', 'sora ai video generator', 'ai video generator free to music', 'ai video generator free to musicwith mp4a']
+2025-07-15 13:54:00,782 - __main__ - INFO - Step 1: Scraping URLs...
+2025-07-15 13:54:00,782 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.heygen.com/avatars
+2025-07-15 13:54:01,048 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: outputs/heygen_test/client-heygen.com-avatars-v1.html
+2025-07-15 13:54:01,049 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.synthesia.io/features/avatars
+2025-07-15 13:54:01,479 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: outputs/heygen_test/competitor-synthesia.io-features-avatars-v1.html
+2025-07-15 13:54:01,480 - __main__ - INFO - Step 2: Extracting content...
+2025-07-15 13:54:01,550 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from client
+2025-07-15 13:54:01,791 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from competitor
+2025-07-15 13:54:01,792 - src.passage_embed.analysis.extractor - INFO - Saved extracted data to: outputs/heygen_test/extracted_html_data-v1.json
+2025-07-15 13:54:01,792 - __main__ - INFO - Step 3: Generating embeddings...
+2025-07-15 13:54:01,811 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-07-15 13:54:01,811 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-07-15 13:54:24,824 - src.passage_embed.analysis.embeddings - INFO - Processed 82 embeddings from 2 sources
+2025-07-15 13:54:26,420 - src.passage_embed.analysis.embeddings - INFO - Generated embeddings for 20 queries
+2025-07-15 13:54:26,421 - __main__ - INFO - Step 4: Creating 3D visualization...
+2025-07-15 13:54:26,421 - src.passage_embed.visualization.plotly_3d - INFO - Reducing dimensions with t-SNE...
+2025-07-15 13:54:26,527 - openTSNE.tsne - INFO - Precomputed initialization provided. Ignoring initalization-related parameters.
+2025-07-15 13:54:26,552 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 13:54:26,652 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 13:54:43,468 - __main__ - INFO - Starting analysis: Client=https://www.heygen.com/avatars, Competitor=https://www.synthesia.io/features/avatars
+2025-07-15 13:54:43,468 - __main__ - INFO - Target queries: ['ai video generator', 'free ai video generator', 'ai video generator free', 'ai video generation models', 'baby ai video generator', 'best ai video generator', 'ai generated video', 'ai porn video generator', 'ai generated porn video', 'ai generated porn videos', 'video ai generator', 'ai generated videos', 'ai music video generator', 'ai video generator porn', 'best ai video generators', 'best free ai video generator', 'nsfw ai video generator free no sign up', 'sora ai video generator', 'ai video generator free to music', 'ai video generator free to musicwith mp4a']
+2025-07-15 13:54:43,468 - __main__ - INFO - Step 1: Scraping URLs...
+2025-07-15 13:54:43,469 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.heygen.com/avatars
+2025-07-15 13:54:43,732 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: outputs/heygen_test/client-heygen.com-avatars-v2.html
+2025-07-15 13:54:43,733 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.synthesia.io/features/avatars
+2025-07-15 13:54:44,067 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: outputs/heygen_test/competitor-synthesia.io-features-avatars-v2.html
+2025-07-15 13:54:44,067 - __main__ - INFO - Step 2: Extracting content...
+2025-07-15 13:54:44,129 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from client
+2025-07-15 13:54:44,368 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from competitor
+2025-07-15 13:54:44,369 - src.passage_embed.analysis.extractor - INFO - Saved extracted data to: outputs/heygen_test/extracted_html_data-v2.json
+2025-07-15 13:54:44,369 - __main__ - INFO - Step 3: Generating embeddings...
+2025-07-15 13:54:44,377 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-07-15 13:54:44,377 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-07-15 13:54:49,604 - src.passage_embed.analysis.embeddings - INFO - Processed 82 embeddings from 2 sources
+2025-07-15 13:54:49,776 - src.passage_embed.analysis.embeddings - INFO - Generated embeddings for 20 queries
+2025-07-15 13:54:49,776 - __main__ - INFO - Step 4: Creating 3D visualization...
+2025-07-15 13:54:49,776 - src.passage_embed.visualization.plotly_3d - INFO - Reducing dimensions with t-SNE...
+2025-07-15 13:54:49,824 - openTSNE.tsne - INFO - Precomputed initialization provided. Ignoring initalization-related parameters.
+2025-07-15 13:54:49,834 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 13:54:49,961 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 13:54:50,670 - src.passage_embed.visualization.plotly_3d - INFO - 3D visualization saved to: outputs/heygen_test/embedding_comparison-v1.html
+2025-07-15 13:54:50,671 - __main__ - INFO - Analysis complete! Visualization saved to: outputs/heygen_test/embedding_comparison-v1.html
+2025-07-15 14:50:19,298 - __main__ - INFO - Starting analysis: Client=https://www.heygen.com/avatars, Competitor=https://www.synthesia.io/features/avatars
+2025-07-15 14:50:19,298 - __main__ - INFO - Target queries: ['ai video generator', 'free ai video generator', 'best ai video generator', 'ai video maker', 'video generator ai', 'ai video creation', 'ai video editor', 'ai video production', 'ai video software', 'ai video tools', 'ai video platform', 'ai video service', 'ai video app', 'ai video website', 'ai video solution', 'ai video technology', 'ai video creation tool', 'ai video generation software', 'ai video maker online', 'ai video generator free']
+2025-07-15 14:50:19,299 - __main__ - INFO - Step 1: Scraping URLs...
+2025-07-15 14:50:19,299 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.heygen.com/avatars
+2025-07-15 14:50:19,643 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: test_output/client-heygen.com-avatars-v1.html
+2025-07-15 14:50:19,644 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.synthesia.io/features/avatars
+2025-07-15 14:50:20,150 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: test_output/competitor-synthesia.io-features-avatars-v1.html
+2025-07-15 14:50:20,150 - __main__ - INFO - Step 2: Extracting content...
+2025-07-15 14:50:20,214 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from client
+2025-07-15 14:50:20,485 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from competitor
+2025-07-15 14:50:20,486 - src.passage_embed.analysis.extractor - INFO - Saved extracted data to: test_output/extracted_html_data-v1.json
+2025-07-15 14:50:20,486 - __main__ - INFO - Step 3: Generating embeddings...
+2025-07-15 14:50:20,505 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-07-15 14:50:20,505 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-07-15 14:50:25,095 - src.passage_embed.analysis.embeddings - INFO - Processed 82 embeddings from 2 sources
+2025-07-15 14:50:25,434 - src.passage_embed.analysis.embeddings - INFO - Generated embeddings for 20 queries
+2025-07-15 14:50:25,434 - __main__ - INFO - Step 4: Creating 3D visualization...
+2025-07-15 14:50:25,434 - src.passage_embed.visualization.plotly_3d - INFO - Reducing dimensions with t-SNE...
+2025-07-15 14:50:25,523 - openTSNE.tsne - INFO - Precomputed initialization provided. Ignoring initalization-related parameters.
+2025-07-15 14:50:25,560 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 14:50:25,655 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 14:50:26,281 - src.passage_embed.visualization.plotly_3d - INFO - 3D visualization saved to: test_output/embedding_comparison-v1.html
+2025-07-15 14:50:26,282 - __main__ - INFO - Analysis complete! Visualization saved to: test_output/embedding_comparison-v1.html
+2025-07-15 14:56:39,286 - __main__ - INFO - Starting analysis: Client=https://www.heygen.com/avatars, Competitor=https://www.synthesia.io/features/avatars
+2025-07-15 14:56:39,287 - __main__ - INFO - Target queries: ['ai video generator', 'free ai video generator', 'best ai video generator', 'ai video maker', 'video generator ai', 'ai video creation', 'ai video editor', 'ai video production', 'ai video software', 'ai video tools', 'ai video platform', 'ai video service', 'ai video app', 'ai video website', 'ai video solution', 'ai video technology', 'ai video creation tool', 'ai video generation software', 'ai video maker online', 'ai video generator free']
+2025-07-15 14:56:39,287 - __main__ - INFO - Step 1: Scraping URLs...
+2025-07-15 14:56:39,287 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.heygen.com/avatars
+2025-07-15 14:56:39,552 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: test_output_fixed/client-heygen.com-avatars-v1.html
+2025-07-15 14:56:39,553 - src.passage_embed.analysis.scraper - INFO - Scraping URL: https://www.synthesia.io/features/avatars
+2025-07-15 14:56:39,973 - src.passage_embed.analysis.scraper - INFO - Saved HTML to: test_output_fixed/competitor-synthesia.io-features-avatars-v1.html
+2025-07-15 14:56:39,974 - __main__ - INFO - Step 2: Extracting content...
+2025-07-15 14:56:40,033 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from client
+2025-07-15 14:56:40,278 - src.passage_embed.analysis.extractor - INFO - Extracted 41 elements from competitor
+2025-07-15 14:56:40,279 - src.passage_embed.analysis.extractor - INFO - Saved extracted data to: test_output_fixed/extracted_html_data-v1.json
+2025-07-15 14:56:40,279 - __main__ - INFO - Step 3: Generating embeddings...
+2025-07-15 14:56:40,292 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-07-15 14:56:40,292 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-07-15 14:56:44,748 - src.passage_embed.analysis.embeddings - INFO - Processed 82 embeddings from 2 sources
+2025-07-15 14:56:44,916 - src.passage_embed.analysis.embeddings - INFO - Generated embeddings for 20 queries
+2025-07-15 14:56:44,917 - __main__ - INFO - Step 4: Creating 3D visualization...
+2025-07-15 14:56:44,917 - src.passage_embed.visualization.plotly_3d - INFO - Reducing dimensions with t-SNE...
+2025-07-15 14:56:44,999 - openTSNE.tsne - INFO - Precomputed initialization provided. Ignoring initalization-related parameters.
+2025-07-15 14:56:45,027 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 14:56:45,118 - openTSNE.tsne - INFO - Automatically determined negative gradient method `bh`
+2025-07-15 14:56:45,746 - src.passage_embed.visualization.plotly_3d - INFO - 3D visualization saved to: test_output_fixed/embedding_comparison-v1.html
+2025-07-15 14:56:45,747 - __main__ - INFO - Analysis complete! Visualization saved to: test_output_fixed/embedding_comparison-v1.html

@@ -1,0 +1,88 @@
+Ask me one question at a time so we can develop a thorough, step-by-step spec for this idea. Each question should build on my previous answers, and our end goal is to have a detailed specification I can hand off to a developer. Let’s do this iteratively and dig into every relevant detail. Remember, only one question at a time.
+
+Include a running count of the current question and total number of spec questions (e.g., Question 2 of 16) in every reply.
+
+Here’s the idea:
+I would like to create some cosine alaysis software to work for any client in the future. Output a complete prompt to help me build this software in a different chat. IT IS CRITICAL that every step of the way considers solid coding best practices. And every step of the way should be meticulously planned and updated to ensure this can be replicated for clients in the future. 
+
+The output should include: 
+HTML t
+
+
+------------------------------
+Ask me one question at a time so we can develop a thorough, step-by-step spec for this idea. Each question should build on my previous answers, and our end goal is to have a detailed specification I can hand off to a developer. Let’s do this iteratively and dig into every relevant detail. Remember, only one question at a time.
+
+Include a running count of the current question and total number of spec questions (e.g., Question 2 of 16) in every reply.
+
+
+Here’s the idea: Passage Embedding Analysis for Content Optimization
+✅ Objective
+Build a system to compare original vs updated webpage content using embedding models to:
+
+Measure semantic improvement relative to keyword intent
+
+Visualize directional change toward target queries
+
+Benchmark two competitors (Peacock vs Apple) on a shared topic (e.g., Wicked)
+
+🎯 Project Goals
+Extract structured on-page content (headings, descriptions, image alt text, etc.)
+
+Generate sentence embeddings for both original and updated content
+
+Track mean cosine similarity improvements toward query intent
+
+Visualize changes in 3D to demonstrate semantic alignment with keywords
+
+Support multi-client comparisons (e.g., Peacock vs Apple) with before/after tracking
+
+🧩 Caveats & Requirements
+Scripts must use Halo spinners for all major steps
+
+Versioned file outputs are required (e.g., *-v2.html)
+
+All embedding scripts must support manual file inputs for flexibility
+
+Content is split by host filter (e.g., “peacock” vs “apple”) inside JSON
+
+Updates are not global; each host’s before/after is analyzed independently
+
+Query embeddings do not change; they act as a fixed intent anchor
+
+🔄 Current Workflow Summary
+HTML downloaded manually (wicked_peacock.html, etc.)
+
+Content extracted using PeacockHTML_extraction.py
+
+Extracts: titles, headings, img alt/src, <dt>/<dd>
+
+Outputs: extracted_html_data-v*.json
+
+Reformatted for analysis using reformat_for_scriptPeacock.py
+
+Outputs: reformatted_input-v*.json + updated version
+
+Visual comparison run using updated 3D comparison script
+
+Loads original + updated
+
+Separates Apple vs Peacock
+
+Embeds all content + target queries
+
+Computes mean embeddings and directional cosine improvements
+
+Plots 3D map with arrows and query mean reference
+
+Outputs: embedding_comparison-v*.html
+
+🔮 Future Work
+✅ Rank passages by distance from query mean
+
+✅ Highlight most improved content
+
+🔲 Add GSC query integration to weight keywords by impressions/clicks
+
+🔲 Export similarity scores to CSV alongside HTML visual
+
+🔲 Add support for grouping queries by intent theme (e.g., “cast” vs “trailer”)
