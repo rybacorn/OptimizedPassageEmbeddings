@@ -39,4 +39,24 @@ htmlcov/
 .ruff_cache/
 
 # Local development files
-Project_Notes/ 
+Project_Notes/
+examples/
+logs/
+tests/
+*.log
+.DS_Store
+
+# Development files
+requirements-dev.txt
+quick_analysis.py
+heygen_queries.txt
+.pre-commit-config.yaml
+
+# Documentation files (keep only README and LICENSE)
+CHANGELOG.md
+MILESTONES.md
+PROJECT_STRUCTURE.md
+ROADMAP.md
+BUILD*.txt
+Passage*.md
+*code-workspace 
