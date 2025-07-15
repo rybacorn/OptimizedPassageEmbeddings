@@ -1,0 +1,40 @@
+# Default configuration for Passage Embedding Analysis Tool
+
+# Output directory structure
+output_dir: "outputs"
+log_dir: "logs"
+cache_dir: ".cache"
+
+# Test outputs should go to outputs/test_runs/
+test_output_dir: "outputs/test_runs"
+
+# Logging configuration
+log_level: "INFO"
+log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Scraping configuration
+scraping:
+  user_agents:
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 1.0
+  rate_limit_delay: 1.0
+
+# Embedding configuration
+embedding:
+  model_name: "all-MiniLM-L6-v2"
+  batch_size: 32
+  max_length: 512
+  cache_dir: ".cache/embeddings"
+
+# Visualization configuration
+visualization:
+  plot_height: 800
+  plot_width: 1200
+  dot_size: 8
+  client_color: "#0055ff"
+  competitor_color: "#ff5500"
+  comparison_color: "#55ff00" 
