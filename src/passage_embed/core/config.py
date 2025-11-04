@@ -24,7 +24,8 @@ class ScrapingConfig:
 @dataclass
 class EmbeddingConfig:
     """Configuration for embedding generation."""
-    model_name: str = 'all-MiniLM-L6-v2'
+    model_name: str = 'google/embeddinggemma-300m'
+    embedding_dim: int = 768
     batch_size: int = 32
     max_length: int = 512
     cache_dir: str = '.cache/embeddings'
@@ -65,8 +66,16 @@ class Config:
     log_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
     @classmethod
-    def load_from_file(cls, config_path: Optional[str] = None) -> 'Config':
-        """Load configuration from YAML file."""
+    def load_from_file(cls, config_path: Optional[str] = None, interactive: bool = True) -> 'Config':
+        """Load configuration from YAML file.
+        
+        Args:
+            config_path: Path to configuration file. If None, uses 'config.yaml'.
+            interactive: If True, prompts user on validation errors. If False, raises exceptions.
+            
+        Returns:
+            Config instance with loaded values.
+        """
         if config_path is None:
             config_path = 'config.yaml'
         
@@ -79,9 +88,84 @@ class Config:
             return config
         
         with open(config_file, 'r') as f:
-            data = yaml.safe_load(f)
+            data = yaml.safe_load(f) or {}
         
-        return cls(**data)
+        # Create default config first
+        config = cls()
+        
+        # Reconstruct nested dataclasses from dict data
+        if 'scraping' in data and isinstance(data['scraping'], dict):
+            try:
+                config.scraping = ScrapingConfig(**data['scraping'])
+                # Validate the created config object
+                if not isinstance(config.scraping.timeout, int) or config.scraping.timeout <= 0:
+                    raise ValueError(f"scraping.timeout must be a positive integer, got {config.scraping.timeout}")
+            except (TypeError, ValueError) as e:
+                error_msg = f"Invalid scraping config: {e}"
+                if interactive:
+                    response = input(f"⚠️  Warning: {error_msg}\nProceed with default scraping config? [y/n]: ")
+                    if response.lower() != 'y':
+                        raise ValueError(f"Config loading cancelled: {error_msg}")
+                    # Use default scraping config
+                    config.scraping = ScrapingConfig()
+                else:
+                    raise ValueError(error_msg)
+        
+        if 'embedding' in data and isinstance(data['embedding'], dict):
+            try:
+                config.embedding = EmbeddingConfig(**data['embedding'])
+            except (TypeError, ValueError) as e:
+                error_msg = f"Invalid embedding config: {e}"
+                if interactive:
+                    response = input(f"⚠️  Warning: {error_msg}\nProceed with default embedding config? [y/n]: ")
+                    if response.lower() != 'y':
+                        raise ValueError(f"Config loading cancelled: {error_msg}")
+                    # Use default embedding config
+                    config.embedding = EmbeddingConfig()
+                else:
+                    raise ValueError(error_msg)
+        
+        if 'visualization' in data and isinstance(data['visualization'], dict):
+            try:
+                config.visualization = VisualizationConfig(**data['visualization'])
+            except (TypeError, ValueError) as e:
+                error_msg = f"Invalid visualization config: {e}"
+                if interactive:
+                    response = input(f"⚠️  Warning: {error_msg}\nProceed with default visualization config? [y/n]: ")
+                    if response.lower() != 'y':
+                        raise ValueError(f"Config loading cancelled: {error_msg}")
+                    # Use default visualization config
+                    config.visualization = VisualizationConfig()
+                else:
+                    raise ValueError(error_msg)
+        
+        # Update top-level fields (allow partial overrides)
+        for key in ['output_dir', 'test_output_dir', 'log_dir', 'cache_dir', 'log_level', 'log_format']:
+            if key in data:
+                try:
+                    setattr(config, key, data[key])
+                except (TypeError, ValueError) as e:
+                    error_msg = f"Invalid value for {key}: {e}"
+                    if interactive:
+                        response = input(f"⚠️  Warning: {error_msg}\nProceed with default value? [y/n]: ")
+                        if response.lower() != 'y':
+                            raise ValueError(f"Config loading cancelled: {error_msg}")
+                    else:
+                        raise ValueError(error_msg)
+        
+        # Validate the final configuration
+        try:
+            config.validate()
+        except ValueError as e:
+            error_msg = f"Configuration validation failed: {e}"
+            if interactive:
+                response = input(f"⚠️  Warning: {error_msg}\nProceed anyway? [y/n]: ")
+                if response.lower() != 'y':
+                    raise ValueError(f"Config loading cancelled: {error_msg}")
+            else:
+                raise ValueError(error_msg)
+        
+        return config
     
     def save_to_file(self, config_path: str = 'config.yaml') -> None:
         """Save configuration to YAML file."""
@@ -105,6 +189,7 @@ class Config:
             },
             'embedding': {
                 'model_name': self.embedding.model_name,
+                'embedding_dim': self.embedding.embedding_dim,
                 'batch_size': self.embedding.batch_size,
                 'max_length': self.embedding.max_length,
                 'cache_dir': self.embedding.cache_dir

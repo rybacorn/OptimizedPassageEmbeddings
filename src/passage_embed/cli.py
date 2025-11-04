@@ -3,20 +3,58 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from .core.logging import setup_logging, get_logger
 from .core.config import Config
 from .utils.validation import validate_url, validate_queries, extract_domain_name
-from .utils.output_management import get_output_directory, create_test_run_directory
+from .utils.output_management import create_test_run_directory
 from .analysis.scraper import WebScraper
 from .analysis.extractor import HTMLExtractor
 from .analysis.embeddings import EmbeddingGenerator
 from .visualization.plotly_3d import create_3d_visualization
 
 
+MODEL_PRESETS = {
+    "fast": "all-MiniLM-L6-v2",
+    "accurate": "all-mpnet-base-v2",
+    "multilingual": "paraphrase-multilingual-mpnet-base-v2",
+    "large": "sentence-transformers/all-roberta-large-v1",
+}
+
+VALID_EMBEDDING_DIMS = (128, 256, 512, 768)
+DEFAULT_MODEL_NAME = "google/embeddinggemma-300m"
+DEFAULT_EMBEDDING_DIM = 768
+
+
+def resolve_model_name(name: Optional[str]) -> str:
+    """Resolve preset aliases to full model identifiers."""
+    if not name:
+        return DEFAULT_MODEL_NAME
+    return MODEL_PRESETS.get(name, name)
+
+
+def resolve_embedding_dim(cli_value: Optional[int], config_value: Optional[int]) -> int:
+    """Resolve embedding dimension with CLI taking precedence."""
+    if cli_value is not None:
+        return cli_value
+    if config_value is not None:
+        return config_value
+    return DEFAULT_EMBEDDING_DIM
+
+
+def get_embedding_config_value(config_obj: Any, key: str) -> Optional[Any]:
+    """Safely extract embedding configuration values from dataclass or dict."""
+    if config_obj is None:
+        return None
+    if isinstance(config_obj, dict):
+        return config_obj.get(key)
+    return getattr(config_obj, key, None)
+
+
 def analyze_urls(client_url: str, competitor_url: str, queries: List[str], 
-                output_dir: str = 'outputs', config_path: Optional[str] = None) -> str:
+                output_dir: str = 'outputs', config_path: Optional[str] = None,
+                model: Optional[str] = None, embedding_dim: Optional[int] = None) -> str:
     """Analyze client vs competitor content against target queries.
     
     Args:
@@ -25,6 +63,8 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
         queries: List of target queries
         output_dir: Directory to save outputs
         config_path: Path to configuration file
+        model: Optional model override from CLI
+        embedding_dim: Optional embedding dimension override from CLI
         
     Returns:
         Path to the generated HTML visualization
@@ -35,8 +75,25 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
     setup_logging()
     config = Config.load_from_file(config_path) if config_path else Config()
     
+    # Resolve model and embedding dimension priorities: CLI > config > defaults
+    embedding_config = getattr(config, 'embedding', None)
+    config_model = get_embedding_config_value(embedding_config, 'model_name')
+    config_embedding_dim = get_embedding_config_value(embedding_config, 'embedding_dim')
+
+    resolved_model = resolve_model_name(model or config_model)
+    resolved_embedding_dim = resolve_embedding_dim(embedding_dim, config_embedding_dim)
+
+    if resolved_embedding_dim not in VALID_EMBEDDING_DIMS:
+        logger.warning(
+            "Embedding dimension %s is not supported; defaulting to %s.",
+            resolved_embedding_dim,
+            DEFAULT_EMBEDDING_DIM,
+        )
+        resolved_embedding_dim = DEFAULT_EMBEDDING_DIM
+
     logger.info(f"Starting analysis: Client={client_url}, Competitor={competitor_url}")
     logger.info(f"Target queries: {queries}")
+    logger.info("Using embedding model '%s' (dim=%s)", resolved_model, resolved_embedding_dim)
     
     # Step 1: Scrape URLs
     logger.info("Step 1: Scraping URLs...")
@@ -56,7 +113,7 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
     
     # Step 3: Generate embeddings
     logger.info("Step 3: Generating embeddings...")
-    embedding_gen = EmbeddingGenerator()
+    embedding_gen = EmbeddingGenerator(model_name=resolved_model, embedding_dim=resolved_embedding_dim)
     
     # Extract domain names for better labeling
     client_domain = extract_domain_name(client_url)
@@ -75,25 +132,27 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
         "Query": 6
     }
     
-    # Process content embeddings with domain names
+    # Process content embeddings (labels will be role names: 'client', 'competitor')
     embeddings_data, mean_embeddings = embedding_gen.process_json_data(
         extracted_data, symbol_mapping, size_mapping
     )
     
-    # Update labels to use domain names
+    # Create mapping from role names to domain names
+    role_to_domain = {
+        'client': client_domain,
+        'competitor': competitor_domain
+    }
+    
+    # Update labels to use domain names instead of role names
     for data in embeddings_data:
-        if data['label'] == client_url:
-            data['label'] = client_domain
-        elif data['label'] == competitor_url:
-            data['label'] = competitor_domain
+        if data['label'] in role_to_domain:
+            data['label'] = role_to_domain[data['label']]
     
     # Update mean embeddings keys to use domain names
     mean_embeddings_with_domains = {}
     for key, value in mean_embeddings.items():
-        if key == client_url:
-            mean_embeddings_with_domains[client_domain] = value
-        elif key == competitor_url:
-            mean_embeddings_with_domains[competitor_domain] = value
+        if key in role_to_domain:
+            mean_embeddings_with_domains[role_to_domain[key]] = value
         else:
             mean_embeddings_with_domains[key] = value
     mean_embeddings = mean_embeddings_with_domains
@@ -109,7 +168,9 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
         queries_mean,
         output_dir,
         client_url,
-        competitor_url
+        competitor_url,
+        model_name=resolved_model,
+        embedding_dim=resolved_embedding_dim,
     )
     
     logger.info(f"Analysis complete! Visualization saved to: {output_file}")
@@ -178,6 +239,16 @@ Examples:
         "--config", 
         help="Path to configuration file"
     )
+    analyze_parser.add_argument(
+        "--model",
+        help="SentenceTransformer model or preset name (fast, accurate, multilingual, large)",
+    )
+    analyze_parser.add_argument(
+        "--embedding-dim",
+        type=int,
+        choices=list(VALID_EMBEDDING_DIMS),
+        help="Embedding dimension (128, 256, 512, 768). Applies Matryoshka truncation when supported.",
+    )
     
     # Test run command
     test_parser = subparsers.add_parser(
@@ -209,6 +280,16 @@ Examples:
     test_parser.add_argument(
         "--config", 
         help="Path to configuration file"
+    )
+    test_parser.add_argument(
+        "--model",
+        help="SentenceTransformer model or preset name (fast, accurate, multilingual, large)",
+    )
+    test_parser.add_argument(
+        "--embedding-dim",
+        type=int,
+        choices=list(VALID_EMBEDDING_DIMS),
+        help="Embedding dimension (128, 256, 512, 768). Applies Matryoshka truncation when supported.",
     )
     
     # Legacy commands (for backward compatibility)
@@ -276,7 +357,9 @@ Examples:
                 competitor_url, 
                 queries, 
                 args.output_dir,
-                args.config
+                args.config,
+                model=args.model,
+                embedding_dim=args.embedding_dim,
             )
             
             print(f"\n✅ Analysis complete!")
@@ -316,7 +399,9 @@ Examples:
                 competitor_url, 
                 queries, 
                 str(test_dir),
-                args.config
+                args.config,
+                model=args.model,
+                embedding_dim=args.embedding_dim,
             )
             
             print(f"\n✅ Test analysis complete!")

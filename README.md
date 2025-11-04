@@ -5,10 +5,10 @@
   
   [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Version](https://img.shields.io/badge/version-0.1.0-orange)](https://github.com/rybacorn/OptimizedPassageEmbeddings)
+  [![Version](https://img.shields.io/badge/version-0.2.0-orange)](https://github.com/rybacorn/OptimizedPassageEmbeddings)
 </div>
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 ## What is this?
 
@@ -19,6 +19,19 @@ A Python tool that analyzes how well your website content matches against your c
 ## Quick Start
 
 ### 1. Install
+
+> Prefer a guided walkthrough (including the automated `setup.sh` script)? Head over to [SETUP.md](SETUP.md) for the full setup guide.
+
+#### Option A: Automated Setup (recommended)
+
+```bash
+git clone https://github.com/rybacorn/OptimizedPassageEmbeddings.git
+cd OptimizedPassageEmbeddings
+chmod +x setup.sh
+./setup.sh
+```
+
+#### Option B: Manual Installation
 
 ```bash
 # Clone and install
@@ -79,6 +92,95 @@ passage-embed analyze \
   --query-file "queries.txt"
 ```
 
+### How to Get a Clean Query List of 50 Useful Queries
+
+To get the most effective query list for your analysis, we recommend a two-step process:
+
+#### Step 1: Gather Initial Queries from SEO Tools
+
+Start by exporting keywords from Search Engine Optimization (SEO) tools like:
+- **Semrush**: Use the Keyword Magic Tool or Organic Research to export keyword lists
+- **Ahrefs**: Use Keywords Explorer to find relevant keywords and export them
+
+Export a larger set (100-200 keywords) to give yourself options for filtering.
+
+#### Step 2: Refine with Cosine Similarity Analysis
+
+Once you have your initial keyword list, use the [SEO Keyword Similarity Tool on Hugging Face](https://huggingface.co/spaces/ReithBjarkan/SEO_Keyword_Similarity_Tool) to:
+1. Upload your keyword list
+2. Identify the most semantically related queries
+3. Filter down to the top 50 most relevant and related queries
+
+This cosine similarity analysis helps you:
+- Remove duplicate or near-duplicate queries
+- Identify the most cohesive set of related keywords
+- Ensure your query list represents a focused topic cluster
+
+#### Why This Approach?
+
+A well-curated list of 50 semantically related queries will give you more meaningful analysis results than a random mix of keywords. The cosine similarity tool helps ensure your queries are actually related to each other, which makes the embedding analysis more accurate and actionable.
+
+> **Note:** This query refinement feature may be integrated directly into the tool in the future.
+
+### Choosing Embedding Models
+```bash
+# Use a preset alias
+passage-embed analyze \
+  --client "https://yoursite.com" \
+  --competitor "https://competitor.com" \
+  --queries "keyword1,keyword2" \
+  --model multilingual
+
+# Use a specific SentenceTransformers model id
+passage-embed analyze \
+  --client "https://yoursite.com" \
+  --competitor "https://competitor.com" \
+  --queries "keyword1,keyword2" \
+  --model "sentence-transformers/all-mpnet-base-v2"
+
+# Control Matryoshka (MRL) truncation when using EmbeddingGemma
+passage-embed analyze \
+  --client "https://yoursite.com" \
+  --competitor "https://competitor.com" \
+  --queries "keyword1,keyword2" \
+  --model google/embeddinggemma-300m \
+  --embedding-dim 256
+```
+
+**Available presets:**
+- `fast` → `all-MiniLM-L6-v2`
+- `accurate` → `all-mpnet-base-v2`
+- `multilingual` → `paraphrase-multilingual-mpnet-base-v2`
+- `large` → `sentence-transformers/all-roberta-large-v1`
+
+### Hugging Face login (required for EmbeddingGemma)
+
+The default model `google/embeddinggemma-300m` is gated. Run these once per machine:
+
+```bash
+# 1) Log in (prompts for your token or opens a browser)
+huggingface-cli login
+
+# Or export your token for the current shell
+export HUGGINGFACE_HUB_TOKEN=hf_your_token_here
+
+# 2) (Optional) warm the cache so the first CLI run is faster
+python - <<'PY'
+from sentence_transformers import SentenceTransformer
+SentenceTransformer('google/embeddinggemma-300m')
+PY
+```
+
+Prefer to stay on an open model? Override the defaults:
+
+```bash
+passage-embed analyze \
+  --client "https://yoursite.com" \
+  --competitor "https://competitor.com" \
+  --queries "keyword1,keyword2" \
+  --model fast
+```
+
 ## What You Get
 
 ### Output Files
@@ -97,6 +199,7 @@ passage-embed analyze \
 - Python 3.8 or higher
 - Internet connection (for web scraping)
 - Modern web browser (for viewing results)
+- PyTorch 2.0+ (installed via `requirements.txt`) for EmbeddingGemma support
 
 ## Installation
 
@@ -122,7 +225,7 @@ pre-commit install
 
 1. **Scraping**: Downloads HTML from your URLs and competitor URLs
 2. **Extraction**: Pulls out meaningful content (headings, paragraphs, meta tags)
-3. **Embedding**: Converts all text to numerical vectors using AI models
+3. **Embedding**: Converts all text to numerical vectors using AI models (default: `google/embeddinggemma-300m` with optional Matryoshka truncation)
 4. **Analysis**: Calculates similarity between your content, competitor content, and target keywords
 5. **Visualization**: Creates an interactive 3D plot showing relationships
 

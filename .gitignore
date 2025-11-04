@@ -1,62 +1,21 @@
-# Python
+# Python artifacts
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Virtual Environment
+# Virtual environment
 venv/
-env/
-ENV/
+.venv/
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Project specific
-outputs/
-.coverage
-htmlcov/
-.pytest_cache/
-.ruff_cache/
-
-# Local development files
-Project_Notes/
-examples/
-logs/
-tests/
-*.log
+# macOS metadata
 .DS_Store
 
-# Development files
-requirements-dev.txt
-quick_analysis.py
-heygen_queries.txt
-.pre-commit-config.yaml
+# Test cache
+.pytest_cache/
 
-# Documentation files (keep only README and LICENSE)
-CHANGELOG.md
-MILESTONES.md
-PROJECT_STRUCTURE.md
-ROADMAP.md
-BUILD*.txt
-Passage*.md
-*code-workspace 
+# Generated data
+logs/
+outputs/
+*.log
+
+# Local-only code
+tests/

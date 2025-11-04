@@ -3,11 +3,12 @@
 import numpy as np
 import pandas as pd
 from openTSNE import TSNE
+from sklearn.decomposition import PCA
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import os
 
 from ..core.exceptions import VisualizationError
@@ -16,6 +17,10 @@ from ..utils.versioning import VersionManager
 
 logger = get_logger(__name__)
 
+# Minimum samples needed for t-SNE to work reliably
+MIN_SAMPLES_FOR_TSNE = 4
+DEFAULT_PERPLEXITY = 30
+
 
 def create_3d_visualization(
     embeddings_data: List[Dict[str, Any]],
@@ -23,7 +28,9 @@ def create_3d_visualization(
     queries_mean: np.ndarray,
     output_dir: str = 'outputs',
     client_url: str = '',
-    competitor_url: str = ''
+    competitor_url: str = '',
+    model_name: Optional[str] = None,
+    embedding_dim: Optional[int] = None,
 ) -> str:
     """Create 3D visualization of embeddings.
     
@@ -37,11 +44,54 @@ def create_3d_visualization(
         Path to the generated HTML file
     """
     try:
-        # Step 1: Reduce dimensions with t-SNE
-        logger.info("Reducing dimensions with t-SNE...")
+        # Step 1: Reduce dimensions with t-SNE or PCA fallback
+        logger.info("Reducing dimensions for visualization...")
         all_embeddings = np.array([data['embedding'] for data in embeddings_data])
-        tsne = TSNE(n_components=3, perplexity=30, random_state=42)
-        reduced_embeddings = tsne.fit(all_embeddings)
+        n_samples = len(all_embeddings)
+        
+        # Check if we have enough data for t-SNE
+        if n_samples < MIN_SAMPLES_FOR_TSNE:
+            logger.warning(
+                f"Only {n_samples} samples available. t-SNE requires at least {MIN_SAMPLES_FOR_TSNE} samples. "
+                "Using PCA fallback for dimensionality reduction."
+            )
+            # Use PCA as simple fallback for very small datasets
+            # PCA requires n_components <= min(n_samples, n_features)
+            # For 3D visualization, use min(3, n_samples) components
+            n_components = min(3, n_samples)
+            pca = PCA(n_components=n_components, random_state=42)
+            reduced_embeddings = pca.fit_transform(all_embeddings)
+            # Pad to 3D if needed (for datasets with fewer than 3 samples)
+            if n_components < 3:
+                padding = np.zeros((n_samples, 3 - n_components))
+                reduced_embeddings = np.hstack([reduced_embeddings, padding])
+            reduction_method = "PCA"
+        else:
+            # Calculate adaptive perplexity: must be less than n_samples-1
+            # Use a reasonable default (30) but cap it based on sample size
+            perplexity = max(5, min(DEFAULT_PERPLEXITY, n_samples - 1))
+            
+            try:
+                logger.info(f"Using t-SNE with perplexity={perplexity} (n_samples={n_samples})")
+                tsne = TSNE(n_components=3, perplexity=perplexity, random_state=42)
+                reduced_embeddings = tsne.fit(all_embeddings)
+                reduction_method = "t-SNE"
+            except Exception as e:
+                logger.warning(
+                    f"t-SNE failed with perplexity={perplexity}: {e}. "
+                    "Falling back to PCA for dimensionality reduction."
+                )
+                # Fallback to PCA if t-SNE fails for any reason
+                n_components = min(3, n_samples)
+                pca = PCA(n_components=n_components, random_state=42)
+                reduced_embeddings = pca.fit_transform(all_embeddings)
+                # Pad to 3D if needed
+                if n_components < 3:
+                    padding = np.zeros((n_samples, 3 - n_components))
+                    reduced_embeddings = np.hstack([reduced_embeddings, padding])
+                reduction_method = "PCA"
+        
+        logger.info(f"Dimension reduction completed using {reduction_method}")
         
         # Add coordinates to data
         for i, data in enumerate(embeddings_data):
@@ -76,6 +126,12 @@ def create_3d_visualization(
             plot_title = f"Content Embedding Analysis: {client_domain} vs {competitor_domain} vs Queries"
         else:
             plot_title = "Content Embedding Analysis: Client vs Competitor vs Queries"
+
+        if model_name:
+            dim_display = embedding_dim if embedding_dim is not None else 'auto'
+            plot_title = f"{plot_title} (Model: {model_name}, Dim: {dim_display}, Reduction: {reduction_method})"
+        else:
+            plot_title = f"{plot_title} (Reduction: {reduction_method})"
         
         # Step 5: Create 3D scatter plot
         fig = px.scatter_3d(
@@ -172,6 +228,11 @@ def create_3d_visualization(
         else:
             html_title = "Content Embedding Analysis Results"
             page_title = "🎯 Content Embedding Analysis Results"
+
+        model_summary = "Default configuration"
+        if model_name:
+            dim_summary = embedding_dim if embedding_dim is not None else 'auto'
+            model_summary = f"Model: {model_name} · Embedding Dim: {dim_summary}"
         
         # Step 7: Combine visualizations
         combined_html = f"""
@@ -195,6 +256,7 @@ def create_3d_visualization(
                 <div class="header">
                     <h1>{page_title}</h1>
                     <p>3D visualization of content similarity to target queries</p>
+                    <p><strong>{model_summary}</strong></p>
                 </div>
                 
                 <div class="visualization">

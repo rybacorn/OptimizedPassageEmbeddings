@@ -2,7 +2,7 @@
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from halo import Halo
 
 from ..core.exceptions import EmbeddingError
@@ -11,27 +11,65 @@ from ..core.logging import get_logger
 logger = get_logger(__name__)
 
 
+ALLOWED_MRL_DIMS = {128, 256, 512, 768}
+
+
 class EmbeddingGenerator:
     """Generator for text embeddings using sentence transformers."""
-    
-    def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
+
+    def __init__(
+        self,
+        model_name: str = 'google/embeddinggemma-300m',
+        embedding_dim: int = 768,
+    ):
         """Initialize embedding generator.
-        
+
         Args:
-            model_name: Name of the sentence transformer model to use
+            model_name: Name of the sentence transformer model to use.
+            embedding_dim: Target embedding dimension when supported (Matryoshka truncation).
         """
         self.model_name = model_name
-        self.model = None
+        self.embedding_dim = embedding_dim
+        self.model: Optional[SentenceTransformer] = None
+        self.is_gemma = 'embeddinggemma' in self.model_name.lower()
+        self._validate_embedding_dim()
         self._load_model()
     
     def _load_model(self):
         """Load the sentence transformer model."""
         try:
             with Halo(text=f"Loading SentenceTransformer model: {self.model_name}", spinner="dots") as spinner:
-                self.model = SentenceTransformer(self.model_name)
+                if self.is_gemma:
+                    try:
+                        import torch
+                    except ImportError as import_error:
+                        raise EmbeddingError(
+                            "PyTorch is required to load EmbeddingGemma models. Please install torch>=2.0.0."
+                        ) from import_error
+
+                    target_dtype = torch.bfloat16 if hasattr(torch, 'bfloat16') else torch.float32
+                    self.model = SentenceTransformer(
+                        self.model_name,
+                        model_kwargs={'torch_dtype': target_dtype},
+                    )
+                else:
+                    self.model = SentenceTransformer(self.model_name)
                 spinner.succeed(f"Model {self.model_name} loaded successfully")
         except Exception as e:
             raise EmbeddingError(f"Failed to load model {self.model_name}: {e}")
+
+    def _validate_embedding_dim(self) -> None:
+        """Validate embedding dimension constraints."""
+        if self.embedding_dim is None:
+            return
+
+        if not isinstance(self.embedding_dim, int) or self.embedding_dim <= 0:
+            raise EmbeddingError("embedding_dim must be a positive integer")
+
+        if self.is_gemma and self.embedding_dim not in ALLOWED_MRL_DIMS:
+            raise EmbeddingError(
+                f"EmbeddingGemma supports embedding dimensions {sorted(ALLOWED_MRL_DIMS)}, received {self.embedding_dim}."
+            )
     
     def generate_embeddings(self, texts: List[str]) -> np.ndarray:
         """Generate embeddings for a list of texts.
@@ -48,6 +86,7 @@ class EmbeddingGenerator:
         try:
             with Halo(text=f"Generating embeddings for {len(texts)} texts", spinner="dots") as spinner:
                 embeddings = self.model.encode(texts)
+                embeddings = self._apply_truncation(embeddings)
                 spinner.succeed(f"Generated embeddings for {len(texts)} texts")
             return embeddings
         except Exception as e:
@@ -77,7 +116,8 @@ class EmbeddingGenerator:
             
             for element in elements:
                 try:
-                    embedding = self.model.encode(element["value"])
+                    embedding = self._encode_document(element["value"])
+                    embedding = self._apply_truncation(embedding)
                     embeddings_data.append({
                         'embedding': embedding,
                         'label': url_key,
@@ -112,7 +152,8 @@ class EmbeddingGenerator:
             
         try:
             with Halo(text=f"Generating embeddings for {len(queries)} queries", spinner="dots") as spinner:
-                query_embeddings = self.model.encode(queries)
+                query_embeddings = self._encode_queries(queries)
+                query_embeddings = self._apply_truncation(query_embeddings)
                 spinner.succeed(f"Generated query embeddings")
             
             query_embeddings_data = [
@@ -134,16 +175,74 @@ class EmbeddingGenerator:
         except Exception as e:
             raise EmbeddingError(f"Failed to generate query embeddings: {e}")
 
+    def _encode_document(self, text: str) -> np.ndarray:
+        """Encode a document using the appropriate model method."""
+        if self.model is None:
+            raise EmbeddingError("Model not loaded")
 
-def generate_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -> np.ndarray:
+        if self.is_gemma and hasattr(self.model, 'encode_document'):
+            embeddings = self.model.encode_document([text])
+        else:
+            embeddings = self.model.encode([text])
+
+        array = np.asarray(embeddings)
+        if array.ndim == 1:
+            return array
+        return array[0]
+
+    def _encode_queries(self, queries: List[str]) -> np.ndarray:
+        """Encode queries using the appropriate model method."""
+        if self.model is None:
+            raise EmbeddingError("Model not loaded")
+
+        if self.is_gemma and hasattr(self.model, 'encode_query'):
+            return np.asarray(self.model.encode_query(queries))
+
+        return np.asarray(self.model.encode(queries))
+
+    def _apply_truncation(self, embeddings: np.ndarray) -> np.ndarray:
+        """Apply Matryoshka truncation when requested."""
+        if self.embedding_dim is None:
+            return embeddings
+
+        array = np.asarray(embeddings)
+
+        if array.ndim == 1:
+            return self._truncate_embedding(array)
+
+        if array.ndim == 2:
+            return np.array([self._truncate_embedding(vec) for vec in array])
+
+        return array
+
+    def _truncate_embedding(self, embedding: np.ndarray) -> np.ndarray:
+        """Truncate an embedding vector and renormalize it."""
+        vector = np.asarray(embedding)
+
+        if self.embedding_dim is None or vector.shape[-1] <= self.embedding_dim:
+            return vector
+
+        truncated = vector[:self.embedding_dim]
+        norm = np.linalg.norm(truncated)
+        if norm > 0:
+            truncated = truncated / norm
+        return truncated
+
+
+def generate_embeddings(
+    texts: List[str],
+    model_name: str = 'google/embeddinggemma-300m',
+    embedding_dim: int = 768,
+) -> np.ndarray:
     """Convenience function to generate embeddings.
     
     Args:
         texts: List of text strings to embed
         model_name: Name of the sentence transformer model
+        embedding_dim: Target embedding dimension when supported
         
     Returns:
         Array of embeddings
     """
-    generator = EmbeddingGenerator(model_name)
-    return generator.generate_embeddings(texts) 
+    generator = EmbeddingGenerator(model_name, embedding_dim)
+    return generator.generate_embeddings(texts)

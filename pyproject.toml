@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "passage-embedding-analysis"
-version = "0.1.0"
+version = "0.2.0"
 description = "A tool for analyzing passage embeddings and similarity"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -13,14 +13,22 @@ authors = [
     { name = "Your Name", email = "your.email@example.com" }
 ]
 dependencies = [
-    "requests",
-    "beautifulsoup4",
-    "lxml",
-    "sentence-transformers",
-    "scikit-learn",
-    "plotly",
-    "halo",
-    "slugify",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "sentence-transformers>=3.0.0",
+    "scikit-learn>=1.3.0",
+    "plotly>=5.18.0",
+    "halo>=0.0.31",
+    "python-slugify>=8.0.0",
+    "ruff>=0.1.0",
+    "PyYAML",
+    "openTSNE>=1.0.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "torch>=2.0.0",
+    "pytest>=7.4.0",
+    "responses>=0.24.0",
 ]
 
 [project.scripts]
