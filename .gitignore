@@ -16,6 +16,3 @@ venv/
 logs/
 outputs/
 *.log
-
-# Local-only code
-tests/
