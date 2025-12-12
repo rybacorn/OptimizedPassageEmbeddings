@@ -193,6 +193,8 @@ passage-embed analyze \
 - **Color coding**: Different colors for your content vs competitor vs keywords
 - **Interactive**: Zoom, rotate, hover for details
 - **Similarity scores**: See exactly how similar content pieces are
+- **Robust dimensionality reduction**: Automatically uses PCA fallback for small datasets (< 4 samples)
+- **Adaptive t-SNE**: Automatically adjusts perplexity based on dataset size for optimal performance
 
 ## Requirements
 

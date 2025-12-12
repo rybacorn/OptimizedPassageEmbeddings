@@ -74,7 +74,7 @@ def create_3d_visualization(
             try:
                 logger.info(f"Using t-SNE with perplexity={perplexity} (n_samples={n_samples})")
                 tsne = TSNE(n_components=3, perplexity=perplexity, random_state=42)
-        reduced_embeddings = tsne.fit(all_embeddings)
+                reduced_embeddings = tsne.fit_transform(all_embeddings)
                 reduction_method = "t-SNE"
             except Exception as e:
                 logger.warning(
