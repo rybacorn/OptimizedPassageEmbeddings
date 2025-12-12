@@ -16,3 +16,10 @@ venv/
 logs/
 outputs/
 *.log
+
+# Local-only code
+tests/
+
+# IDE and development files
+.cursorindexingignore
+.specstory/
