@@ -23,3 +23,6 @@ tests/
 # IDE and development files
 .cursorindexingignore
 .specstory/
+
+# Internal documentation (not for public repo)
+.docs/
