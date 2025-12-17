@@ -31,6 +31,7 @@ def create_3d_visualization(
     competitor_url: str = '',
     model_name: Optional[str] = None,
     embedding_dim: Optional[int] = None,
+    extracted_data: Optional[Dict[str, List[Dict[str, Any]]]] = None,
 ) -> str:
     """Create 3D visualization of embeddings.
     
@@ -134,12 +135,23 @@ def create_3d_visualization(
             plot_title = f"{plot_title} (Reduction: {reduction_method})"
         
         # Step 5: Create 3D scatter plot
+        # Use consistent color for Queries and Mean: Queries
+        color_discrete_map = {}
+        query_color = '#2ca02c'  # Green
+        for label in df['label'].unique():
+            if label == 'Queries':
+                color_discrete_map[label] = query_color
+            else:
+                # Use default colors for other labels
+                color_discrete_map[label] = None
+        
         fig = px.scatter_3d(
             df,
             x='x', y='y', z='z',
             color='label',
             symbol='symbol',
             size='size',
+            color_discrete_map=color_discrete_map,
             hover_data={
                 'type': True,
                 'value': True,
@@ -160,9 +172,9 @@ def create_3d_visualization(
         
         # Add mean points and arrows for each group using t-SNE means
         for label, tsne_mean in tsne_means.items():
-            # Determine color based on label
+            # Determine color based on label - use same color as queries for consistency
             if label == 'Queries':
-                mean_color = color_mapping['Queries']
+                mean_color = query_color  # Use same color as queries points
                 mean_symbol = 'diamond-open'
             elif 'client' in label.lower() or any(client_domain in label for client_domain in ['heygen', 'synthesia', 'runway']):
                 mean_color = color_mapping['client']
@@ -217,6 +229,8 @@ def create_3d_visualization(
             color='Cosine Similarity',
             color_continuous_scale='RdYlGn'
         )
+        # Make the chart smaller
+        similarity_fig.update_layout(height=400, width=600)
         
         # Create HTML title with site comparison
         if client_url and competitor_url:
@@ -249,6 +263,8 @@ def create_3d_visualization(
                 .score.good {{ color: green; }}
                 .score.medium {{ color: orange; }}
                 .score.poor {{ color: red; }}
+                .extracted-elements {{ margin-top: 40px; }}
+                table {{ font-size: 14px; }}
             </style>
         </head>
         <body>
@@ -311,6 +327,47 @@ def create_3d_visualization(
                             <li>Monitor improvements by running this analysis again after changes</li>
                         </ul>
                     </div>
+        """
+        
+        # Add extracted HTML elements table if available
+        if extracted_data:
+            combined_html += """
+                    <div class="extracted-elements">
+                        <h3>📋 Extracted HTML Elements:</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Source</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Type</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            """
+            
+            # Flatten extracted data for table display
+            for source, elements in extracted_data.items():
+                for element in elements:
+                    # Truncate long values for display
+                    value = element.get('value', '')
+                    if len(value) > 200:
+                        value = value[:200] + '...'
+                    
+                    combined_html += f"""
+                                <tr>
+                                    <td style="padding: 8px; border: 1px solid #ddd;">{source}</td>
+                                    <td style="padding: 8px; border: 1px solid #ddd;">{element.get('type', 'N/A')}</td>
+                                    <td style="padding: 8px; border: 1px solid #ddd;">{value}</td>
+                                </tr>
+                    """
+            
+            combined_html += """
+                            </tbody>
+                        </table>
+                    </div>
+            """
+        
+        combined_html += """
                 </div>
             </div>
         </body>

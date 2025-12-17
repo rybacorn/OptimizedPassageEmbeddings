@@ -171,6 +171,7 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
         competitor_url,
         model_name=resolved_model,
         embedding_dim=resolved_embedding_dim,
+        extracted_data=extracted_data,
     )
     
     logger.info(f"Analysis complete! Visualization saved to: {output_file}")
