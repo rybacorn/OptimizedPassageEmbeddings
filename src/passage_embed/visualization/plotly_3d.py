@@ -125,8 +125,12 @@ def create_3d_visualization(
             client_domain = extract_domain_name(client_url)
             competitor_domain = extract_domain_name(competitor_url)
             plot_title = f"Content Embedding Analysis: {client_domain} vs {competitor_domain} vs Queries"
+        elif client_url:
+            from ..utils.validation import extract_domain_name
+            client_domain = extract_domain_name(client_url)
+            plot_title = f"Content Embedding Analysis: {client_domain} vs Queries"
         else:
-            plot_title = "Content Embedding Analysis: Client vs Competitor vs Queries"
+            plot_title = "Content Embedding Analysis: Client vs Queries"
 
         if model_name:
             dim_display = embedding_dim if embedding_dim is not None else 'auto'
@@ -239,6 +243,11 @@ def create_3d_visualization(
             competitor_domain = extract_domain_name(competitor_url)
             html_title = f"Content Embedding Analysis: {client_domain} vs {competitor_domain}"
             page_title = f"🎯 Content Embedding Analysis: {client_domain} vs {competitor_domain}"
+        elif client_url:
+            from ..utils.validation import extract_domain_name
+            client_domain = extract_domain_name(client_url)
+            html_title = f"Content Embedding Analysis: {client_domain}"
+            page_title = f"🎯 Content Embedding Analysis: {client_domain}"
         else:
             html_title = "Content Embedding Analysis Results"
             page_title = "🎯 Content Embedding Analysis Results"

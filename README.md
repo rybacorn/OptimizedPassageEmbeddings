@@ -12,7 +12,7 @@
 
 ## What is this?
 
-A Python tool that analyzes how well your website content matches against your competitors and target search queries. It scrapes web pages, extracts meaningful content, converts everything to embeddings, and creates interactive 3D visualizations showing how similar your content is to competitors and target keywords.
+A Python tool that analyzes how well your website content matches against target search queries (and optionally compares against competitors). It scrapes web pages, extracts SEO-relevant content, converts everything to embeddings, and creates interactive 3D visualizations showing how similar your content is to target keywords and competitors (if provided).
 
 **Perfect for:** SEO analysis, content strategy, competitive research, and understanding how your web content aligns with search intent.
 
@@ -44,7 +44,12 @@ pip install -e .
 ### 2. Run Your First Analysis
 
 ```bash
-# Compare your site vs a competitor
+# Analyze your site against target queries (competitor optional)
+passage-embed analyze \
+  --client "https://yoursite.com/your-page" \
+  --queries "your target keyword,another keyword,third keyword"
+
+# Or compare your site vs a competitor
 passage-embed analyze \
   --client "https://yoursite.com/your-page" \
   --competitor "https://competitor.com/their-page" \
@@ -60,7 +65,14 @@ Open the generated HTML file in your browser to see an interactive 3D visualizat
 
 ## Usage Examples
 
-### Basic Competitive Analysis
+### Basic Analysis (No Competitor)
+```bash
+passage-embed analyze \
+  --client "https://www.heygen.com/avatars" \
+  --queries "ai video generator,free ai video generator,best ai video generator"
+```
+
+### Competitive Analysis
 ```bash
 passage-embed analyze \
   --client "https://www.heygen.com/avatars" \
@@ -71,6 +83,12 @@ passage-embed analyze \
 ### Test Mode (Organized Output)
 ```bash
 # Creates timestamped folders for each test run
+passage-embed test \
+  --client "https://yoursite.com" \
+  --queries "keyword1,keyword2,keyword3" \
+  --run-name "my_analysis_test"
+
+# With competitor comparison
 passage-embed test \
   --client "https://yoursite.com" \
   --competitor "https://competitor.com" \
@@ -85,7 +103,12 @@ echo "ai video generator
 free ai video generator
 best ai video generator" > queries.txt
 
-# Run analysis with the file
+# Run analysis with the file (competitor optional)
+passage-embed analyze \
+  --client "https://yoursite.com" \
+  --query-file "queries.txt"
+
+# With competitor
 passage-embed analyze \
   --client "https://yoursite.com" \
   --competitor "https://competitor.com" \
@@ -127,21 +150,18 @@ A well-curated list of 50 semantically related queries will give you more meanin
 # Use a preset alias
 passage-embed analyze \
   --client "https://yoursite.com" \
-  --competitor "https://competitor.com" \
   --queries "keyword1,keyword2" \
   --model multilingual
 
 # Use a specific SentenceTransformers model id
 passage-embed analyze \
   --client "https://yoursite.com" \
-  --competitor "https://competitor.com" \
   --queries "keyword1,keyword2" \
   --model "sentence-transformers/all-mpnet-base-v2"
 
 # Control Matryoshka (MRL) truncation when using EmbeddingGemma
 passage-embed analyze \
   --client "https://yoursite.com" \
-  --competitor "https://competitor.com" \
   --queries "keyword1,keyword2" \
   --model google/embeddinggemma-300m \
   --embedding-dim 256
@@ -176,7 +196,6 @@ Prefer to stay on an open model? Override the defaults:
 ```bash
 passage-embed analyze \
   --client "https://yoursite.com" \
-  --competitor "https://competitor.com" \
   --queries "keyword1,keyword2" \
   --model fast
 ```
@@ -191,8 +210,10 @@ passage-embed analyze \
 ### Visualization Features
 - **3D scatter plot**: Each point represents a piece of content
 - **Color coding**: Different colors for your content vs competitor vs keywords
+- **Consistent query colors**: "Queries" and "Mean: Queries" use the same color for clarity
 - **Interactive**: Zoom, rotate, hover for details
-- **Similarity scores**: See exactly how similar content pieces are
+- **Similarity scores**: Compact bar chart showing cosine similarity scores
+- **Extracted HTML elements table**: View all extracted content (titles, headings, meta tags) in a clean table
 - **Robust dimensionality reduction**: Automatically uses PCA fallback for small datasets (< 4 samples)
 - **Adaptive t-SNE**: Automatically adjusts perplexity based on dataset size for optimal performance
 
@@ -225,11 +246,18 @@ pre-commit install
 
 ## How It Works
 
-1. **Scraping**: Downloads HTML from your URLs and competitor URLs
-2. **Extraction**: Pulls out meaningful content (headings, paragraphs, meta tags)
+1. **Scraping**: Downloads HTML from your URL (and optionally a competitor URL)
+2. **Extraction**: Pulls out SEO-relevant content:
+   - Page title and meta description
+   - Headings (h1-h6)
+   - Image alt text and filenames (from `<picture>` tags)
+   - Definition lists (dt/dd tags)
 3. **Embedding**: Converts all text to numerical vectors using AI models (default: `google/embeddinggemma-300m` with optional Matryoshka truncation)
-4. **Analysis**: Calculates similarity between your content, competitor content, and target keywords
-5. **Visualization**: Creates an interactive 3D plot showing relationships
+4. **Analysis**: Calculates similarity between your content, competitor content (if provided), and target keywords
+5. **Visualization**: Creates an interactive 3D plot showing relationships with:
+   - Consistent color coding for queries
+   - Compact similarity score charts
+   - Complete table of extracted HTML elements
 
 ## Development
 

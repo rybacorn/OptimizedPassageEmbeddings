@@ -87,7 +87,7 @@ class WebScraper:
         """Scrape multiple URLs.
         
         Args:
-            urls: Dictionary mapping roles to URLs
+            urls: Dictionary mapping roles to URLs (None values are skipped)
             
         Returns:
             Dictionary mapping roles to file paths
@@ -95,6 +95,8 @@ class WebScraper:
         results = {}
         
         for role, url in urls.items():
+            if url is None:
+                continue
             try:
                 html_path = self.scrape_url(url, role)
                 results[role] = html_path

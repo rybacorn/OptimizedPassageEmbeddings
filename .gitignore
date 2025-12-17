@@ -26,3 +26,8 @@ tests/
 
 # Internal documentation (not for public repo)
 .docs/
+
+# Project-specific data files
+queries.txt
+queries_limited.txt
+*.csv

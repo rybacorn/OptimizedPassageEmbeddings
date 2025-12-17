@@ -52,19 +52,20 @@ def get_embedding_config_value(config_obj: Any, key: str) -> Optional[Any]:
     return getattr(config_obj, key, None)
 
 
-def analyze_urls(client_url: str, competitor_url: str, queries: List[str], 
+def analyze_urls(client_url: str, queries: List[str], 
                 output_dir: str = 'outputs', config_path: Optional[str] = None,
-                model: Optional[str] = None, embedding_dim: Optional[int] = None) -> str:
-    """Analyze client vs competitor content against target queries.
+                model: Optional[str] = None, embedding_dim: Optional[int] = None,
+                competitor_url: Optional[str] = None) -> str:
+    """Analyze client content (and optionally competitor) against target queries.
     
     Args:
         client_url: Client website URL
-        competitor_url: Competitor website URL
         queries: List of target queries
         output_dir: Directory to save outputs
         config_path: Path to configuration file
         model: Optional model override from CLI
         embedding_dim: Optional embedding dimension override from CLI
+        competitor_url: Optional competitor website URL
         
     Returns:
         Path to the generated HTML visualization
@@ -91,17 +92,20 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
         )
         resolved_embedding_dim = DEFAULT_EMBEDDING_DIM
 
-    logger.info(f"Starting analysis: Client={client_url}, Competitor={competitor_url}")
+    if competitor_url:
+        logger.info(f"Starting analysis: Client={client_url}, Competitor={competitor_url}")
+    else:
+        logger.info(f"Starting analysis: Client={client_url} (no competitor)")
     logger.info(f"Target queries: {queries}")
     logger.info("Using embedding model '%s' (dim=%s)", resolved_model, resolved_embedding_dim)
     
     # Step 1: Scrape URLs
     logger.info("Step 1: Scraping URLs...")
     scraper = WebScraper(output_dir)
-    html_files = scraper.scrape_multiple_urls({
-        'client': client_url,
-        'competitor': competitor_url
-    })
+    urls_to_scrape = {'client': client_url}
+    if competitor_url:
+        urls_to_scrape['competitor'] = competitor_url
+    html_files = scraper.scrape_multiple_urls(urls_to_scrape)
     
     # Step 2: Extract content
     logger.info("Step 2: Extracting content...")
@@ -117,7 +121,7 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
     
     # Extract domain names for better labeling
     client_domain = extract_domain_name(client_url)
-    competitor_domain = extract_domain_name(competitor_url)
+    competitor_domain = extract_domain_name(competitor_url) if competitor_url else None
     
     # Symbol and size mappings
     symbol_mapping = {
@@ -139,9 +143,10 @@ def analyze_urls(client_url: str, competitor_url: str, queries: List[str],
     
     # Create mapping from role names to domain names
     role_to_domain = {
-        'client': client_domain,
-        'competitor': competitor_domain
+        'client': client_domain
     }
+    if competitor_domain:
+        role_to_domain['competitor'] = competitor_domain
     
     # Update labels to use domain names instead of role names
     for data in embeddings_data:
@@ -185,16 +190,20 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Basic analysis with comma-separated queries
+  # Basic analysis with comma-separated queries (no competitor)
+  passage-embed analyze \\
+    --client "https://www.heygen.com/avatars" \\
+    --queries "ai video generator,free ai video generator,best ai video generator"
+
+  # Analysis with competitor comparison
   passage-embed analyze \\
     --client "https://www.heygen.com/avatars" \\
     --competitor "https://www.synthesia.io/features/avatars" \\
     --queries "ai video generator,free ai video generator,best ai video generator"
 
-  # Analysis with query file
+  # Analysis with query file (no competitor)
   passage-embed analyze \\
     --client "https://client.com/page" \\
-    --competitor "https://competitor.com/page" \\
     --query-file "queries.txt"
 
   # Custom output directory
@@ -211,7 +220,7 @@ Examples:
     # Analyze command
     analyze_parser = subparsers.add_parser(
         "analyze", 
-        help="Analyze client vs competitor content against target queries"
+        help="Analyze client content (and optionally competitor) against target queries"
     )
     analyze_parser.add_argument(
         "--client", 
@@ -220,8 +229,8 @@ Examples:
     )
     analyze_parser.add_argument(
         "--competitor", 
-        required=True, 
-        help="Competitor website URL"
+        required=False, 
+        help="Optional competitor website URL"
     )
     analyze_parser.add_argument(
         "--queries", 
@@ -263,8 +272,8 @@ Examples:
     )
     test_parser.add_argument(
         "--competitor", 
-        required=True, 
-        help="Competitor website URL"
+        required=False, 
+        help="Optional competitor website URL"
     )
     test_parser.add_argument(
         "--queries", 
@@ -334,7 +343,7 @@ Examples:
         if args.command == "analyze":
             # Validate URLs
             client_url = validate_url(args.client)
-            competitor_url = validate_url(args.competitor)
+            competitor_url = validate_url(args.competitor) if args.competitor else None
             
             # Get queries
             queries = []
@@ -355,12 +364,12 @@ Examples:
             # Run analysis
             output_file = analyze_urls(
                 client_url, 
-                competitor_url, 
                 queries, 
                 args.output_dir,
                 args.config,
                 model=args.model,
                 embedding_dim=args.embedding_dim,
+                competitor_url=competitor_url,
             )
             
             print(f"\n✅ Analysis complete!")
@@ -370,7 +379,7 @@ Examples:
         elif args.command == "test":
             # Validate URLs
             client_url = validate_url(args.client)
-            competitor_url = validate_url(args.competitor)
+            competitor_url = validate_url(args.competitor) if args.competitor else None
             
             # Get queries
             queries = []
@@ -397,12 +406,12 @@ Examples:
             # Run analysis in test mode
             output_file = analyze_urls(
                 client_url, 
-                competitor_url, 
                 queries, 
                 str(test_dir),
                 args.config,
                 model=args.model,
                 embedding_dim=args.embedding_dim,
+                competitor_url=competitor_url,
             )
             
             print(f"\n✅ Test analysis complete!")
